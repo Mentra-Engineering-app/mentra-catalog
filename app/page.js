@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase-compat'
 
 /* ═══════════════════════════════════════════════════
    CONSTANTS & HELPERS
@@ -2785,7 +2785,7 @@ function ReviewPanel({ lessonId, lessonTitle, teamMemberEmail, teamMemberName, i
     const recipients = ['terah.bromley@almallc.com']
     if (teamMemberEmail) recipients.push(teamMemberEmail)
 
-    fetch('/api/send-notification', {
+    fetch('/catalog/api/send-notification', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -3475,7 +3475,7 @@ export default function Home() {
 
     /* send email (fire-and-forget, don't block UI) */
     if (member.email) {
-      fetch('/api/send-notification', {
+      fetch('/catalog/api/send-notification', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -3512,7 +3512,7 @@ export default function Home() {
     }
 
     /* send email to managers (fire-and-forget) */
-    fetch('/api/send-notification', {
+    fetch('/catalog/api/send-notification', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -3552,7 +3552,7 @@ export default function Home() {
     }
 
     /* send email (fire-and-forget) */
-    fetch('/api/send-notification', {
+    fetch('/catalog/api/send-notification', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
