@@ -1,16 +1,4 @@
-import { Resend } from 'resend'
-
-// Lazy initialization to avoid build-time errors when API key is not set
-let resend = null
-function getResend() {
-  if (!resend) {
-    if (!process.env.RESEND_API_KEY) {
-      throw new Error('RESEND_API_KEY environment variable is not set')
-    }
-    resend = new Resend(process.env.RESEND_API_KEY)
-  }
-  return resend
-}
+import { sendEmail, isEmailConfigured } from '@/lib/email'
 
 function buildAssignmentEmail({ teamMemberName, lessonTitle, courseName, companyName, appUrl }) {
   return {
@@ -265,9 +253,8 @@ function buildReviewEmail({ reviewerName, lessonTitle, teamMemberName, categorie
 
 export async function POST(request) {
   try {
-    // Skip email sending if Resend API key is not configured
-    if (!process.env.RESEND_API_KEY) {
-      console.log('RESEND_API_KEY not configured, skipping email notification')
+    if (!isEmailConfigured()) {
+      console.log('Email provider not configured, skipping email notification')
       return Response.json({ success: true, skipped: true, reason: 'Email not configured' })
     }
 
@@ -324,19 +311,8 @@ export async function POST(request) {
       html = email.html
     }
 
-    const { data, error } = await getResend().emails.send({
-      from: 'Mentra Video Catalog <notifications@mentra-ai.ai>',
-      to,
-      subject,
-      html,
-    })
-
-    if (error) {
-      console.error('Resend error:', error)
-      return Response.json({ error: error.message }, { status: 500 })
-    }
-
-    return Response.json({ success: true, data })
+    const result = await sendEmail({ to, subject, html })
+    return Response.json({ success: true, ...result })
   } catch (err) {
     console.error('Send notification error:', err)
     return Response.json({ error: 'Internal server error' }, { status: 500 })
