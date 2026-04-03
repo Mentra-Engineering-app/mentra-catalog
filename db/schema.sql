@@ -9,8 +9,11 @@ CREATE TABLE companies (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL,
     is_evergreen BOOLEAN DEFAULT FALSE,
+    mentra_org_id INTEGER,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+CREATE UNIQUE INDEX idx_companies_mentra_org ON companies(mentra_org_id) WHERE mentra_org_id IS NOT NULL;
 
 -- Departments table
 CREATE TABLE departments (
@@ -77,6 +80,17 @@ CREATE TABLE notifications (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Mentra sync log table
+CREATE TABLE mentra_sync_log (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    lesson_id UUID REFERENCES lessons(id) ON DELETE CASCADE,
+    mentra_microtraining_id INTEGER,
+    sync_status TEXT DEFAULT 'pending',
+    error_message TEXT,
+    synced_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- Indexes for performance
 CREATE INDEX idx_departments_company ON departments(company_id);
 CREATE INDEX idx_courses_department ON courses(department_id);
@@ -85,3 +99,5 @@ CREATE INDEX idx_lessons_assigned ON lessons(assigned_to);
 CREATE INDEX idx_lessons_created_by ON lessons(created_by);
 CREATE INDEX idx_notifications_member ON notifications(team_member_id);
 CREATE INDEX idx_notifications_created ON notifications(created_at DESC);
+CREATE INDEX idx_sync_log_lesson ON mentra_sync_log(lesson_id);
+CREATE INDEX idx_sync_log_status ON mentra_sync_log(sync_status);
